@@ -1,212 +1,9 @@
-/**
- *Submitted for verification at Etherscan.io on 2022-05-31
-*/
-
-/**
- *Submitted for verification at Etherscan.io on 2022-05-18
-*/
-
-/**
- *Submitted for verification at Etherscan.io on 2022-05-18
-*/
-
-/**
- *Submitted for verification at Etherscan.io on 2022-05-17
-*/
-
-pragma solidity ^0.8.13;
-// import "hardhat/console.sol";
-
-abstract contract ReentrancyGuard {
-    // Booleans are more expensive than uint256 or any type that takes up a full
-    // word because each write operation emits an extra SLOAD to first read the
-    // slot's contents, replace the bits taken up by the boolean, and then write
-    // back. This is the compiler's defense against contract upgrades and
-    // pointer aliasing, and it cannot be disabled.
-
-    // The values being non-zero value makes deployment a bit more expensive,
-    // but in exchange the refund on every call to nonReentrant will be lower in
-    // amount. Since refunds are capped to a percentage of the total
-    // transaction's gas, it is best to keep them low in cases like this one, to
-    // increase the likelihood of the full refund coming into effect.
-    uint256 private constant _NOT_ENTERED = 1;
-    uint256 private constant _ENTERED = 2;
-
-    uint256 private _status;
-
-    constructor() {
-        _status = _NOT_ENTERED;
-    }
-
-    /**
-     * @dev Prevents a contract from calling itself, directly or indirectly.
-     * Calling a `nonReentrant` function from another `nonReentrant`
-     * function is not supported. It is possible to prevent this from happening
-     * by making the `nonReentrant` function external, and making it call a
-     * `private` function that does the actual work.
-     */
-    modifier nonReentrant() {
-        // On the first call to nonReentrant, _notEntered will be true
-        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
-
-        // Any calls to nonReentrant after this point will fail
-        _status = _ENTERED;
-
-        _;
-
-        // By storing the original value once again, a refund is triggered (see
-        // https://eips.ethereum.org/EIPS/eip-2200)
-        _status = _NOT_ENTERED;
-    }
-}
-
-abstract contract Context {
-    function _msgSender() internal view virtual returns (address) {
-        return msg.sender;
-    }
-
-    function _msgData() internal view virtual returns (bytes calldata) {
-        return msg.data;
-    }
-}
-abstract contract Ownable is Context {
-    address private _owner;
-
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-    /**
-     * @dev Initializes the contract setting the deployer as the initial owner.
-     */
-    constructor() {
-        _transferOwnership(_msgSender());
-    }
-
-    /**
-     * @dev Returns the address of the current owner.
-     */
-    function owner() public view virtual returns (address) {
-        return _owner;
-    }
-
-    /**
-     * @dev Throws if called by any account other than the owner.
-     */
-    modifier onlyOwner() {
-        require(owner() == _msgSender(), "Ownable: caller is not the owner");
-        _;
-    }
-
-    /**
-     * @dev Leaves the contract without owner. It will not be possible to call
-     * `onlyOwner` functions anymore. Can only be called by the current owner.
-     *
-     * NOTE: Renouncing ownership will leave the contract without an owner,
-     * thereby removing any functionality that is only available to the owner.
-     */
-    function renounceOwnership() public virtual onlyOwner {
-        _transferOwnership(address(0));
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Can only be called by the current owner.
-     */
-    function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
-        _transferOwnership(newOwner);
-    }
-
-    /**
-     * @dev Transfers ownership of the contract to a new account (`newOwner`).
-     * Internal function without access restriction.
-     */
-    function _transferOwnership(address newOwner) internal virtual {
-        address oldOwner = _owner;
-        _owner = newOwner;
-        emit OwnershipTransferred(oldOwner, newOwner);
-    }
-}
-/**
- * @dev Interface of the ERC20 standard as defined in the EIP.
- */
-interface IERC20 {
-    /**
-     * @dev Returns the amount of tokens in existence.
-     */
-    function totalSupply() external view returns (uint256);
-
-    /**
-     * @dev Returns the amount of tokens owned by `account`.
-     */
-    function balanceOf(address account) external view returns (uint256);
-
-    /**
-     * @dev Moves `amount` tokens from the caller's account to `recipient`.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transfer(address recipient, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Returns the remaining number of tokens that `spender` will be
-     * allowed to spend on behalf of `owner` through {transferFrom}. This is
-     * zero by default.
-     *
-     * This value changes when {approve} or {transferFrom} are called.
-     */
-    function allowance(address owner, address spender) external view returns (uint256);
-
-    /**
-     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * IMPORTANT: Beware that changing an allowance with this method brings the risk
-     * that someone may use both the old and the new allowance by unfortunate
-     * transaction ordering. One possible solution to mitigate this race
-     * condition is to first reduce the spender's allowance to 0 and set the
-     * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
-     *
-     * Emits an {Approval} event.
-     */
-    function approve(address spender, uint256 amount) external returns (bool);
-
-    /**
-     * @dev Moves `amount` tokens from `sender` to `recipient` using the
-     * allowance mechanism. `amount` is then deducted from the caller's
-     * allowance.
-     *
-     * Returns a boolean value indicating whether the operation succeeded.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) external returns (bool);
-
-    /**
-     * @dev Emitted when `value` tokens are moved from one account (`from`) to
-     * another (`to`).
-     *
-     * Note that `value` may be zero.
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
-    /**
-     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
-     * a call to {approve}. `value` is the new allowance.
-     */
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-}
-
+//SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.0;
-
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract UniplayVesting is Ownable,ReentrancyGuard {
 
     IERC20 public token;
@@ -304,65 +101,32 @@ contract UniplayVesting is Ownable,ReentrancyGuard {
         uint256 initialAmount;
         bool isInitialAmountClaimed;
     }
-
+//reminingUnitsToVest = [0,365,300,1095,240,730,180]
+uint[] public saleTypeUnitsToVest = [0,365,300,1095,240,730,180];
+uint[] public saleTypeMultiplier = [0,5,8,0,10,0,0];
+uint[] public saleTypeTimeframe = [0,365,300,1095,240,730,180];
 
     function addInvestorDetails(Investor[] memory investorArray) public onlyOwner {
         for(uint16 i = 0; i < investorArray.length; i++) {
          if(isremoved){
                  isSameInvestor[investorArray[i].account][investorArray[i].saleType]=true;
                  isremoved=false;
-            }else{  
+            }
+         else{
                 require(!isSameInvestor[investorArray[i].account][investorArray[i].saleType],"Investor Exist");
                 isSameInvestor[investorArray[i].account][investorArray[i].saleType]=true;
             }
-
              uint8 saleType = investorArray[i].saleType;
             InvestorDetails memory investor;
             investor.totalBalance = (investorArray[i].amount) * (10 ** 18);
             investor.investorType = investorArray[i].saleType;
             investor.vestingBalance = investor.totalBalance;
-            if(saleType == 1) {
-                investor.reminingUnitsToVest = 365;
-                investor.initialAmount = (investor.totalBalance * 5)/(100);
-                investor.tokensPerUnit = ((investor.totalBalance) - (investor.initialAmount))/(365);
-            }
-
-            if(saleType == 2) {
-                investor.reminingUnitsToVest = 300;
-                investor.initialAmount = (investor.totalBalance * 8)/(100);
-                investor.tokensPerUnit = ((investor.totalBalance) - (investor.initialAmount))/(300);
-            }
-
-            if(saleType == 3) {
-                investor.reminingUnitsToVest = 1095;
-                investor.initialAmount = 0;
-                investor.tokensPerUnit = investor.totalBalance/1095;
-            }
-
-            if(saleType == 4){
-                investor.reminingUnitsToVest = 240;
-                investor.initialAmount = (investor.totalBalance * 10)/(100);
-                investor.tokensPerUnit = ((investor.totalBalance)-(investor.initialAmount))/(240);
-            }
-
-            if(saleType == 5){
-                investor.reminingUnitsToVest = 730;
-                investor.initialAmount = 0;
-                investor.tokensPerUnit = investor.totalBalance/730;
-            }
-            if(saleType == 6){
-                investor.reminingUnitsToVest = 180;
-                investor.initialAmount = 0;
-                investor.tokensPerUnit = investor.totalBalance/180;
-
-            }
-
+            investor.reminingUnitsToVest = saleTypeUnitsToVest[saleType];
+            investor.initialAmount = (investor.totalBalance * saleTypeMultiplier[saleType]) / 100;
+            investor.tokensPerUnit = ((investor.totalBalance)- (investor.initialAmount))/saleTypeTimeframe[saleType];
             Investors[investorArray[i].account] = investor; 
             emit InvestersAddress(investorArray[i].account,investorArray[i].amount, investorArray[i].saleType);
         }
-        
-       
-
     }
 
     function withdrawTokens() public   nonReentrant setStart {
